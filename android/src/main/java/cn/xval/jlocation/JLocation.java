@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.xval.plugin.PluginPermissionHelper;
@@ -27,7 +28,7 @@ public final class JLocation implements EventChannel.StreamHandler {
     private Long minTime = null;
     private Float minDistance = null;
 
-    private final static String PROVIDER = LocationManager.GPS_PROVIDER;
+    private static String PROVIDER = LocationManager.GPS_PROVIDER;
     private final EventChannel mEventChannel;
     private LocationManager mLocationManager;
     private Context mContext;
@@ -50,6 +51,8 @@ public final class JLocation implements EventChannel.StreamHandler {
         mEventChannel = new EventChannel(registrar.messenger(), STREAM_CHANNEL_NAME);
         mEventChannel.setStreamHandler(this);
         registrar.addRequestPermissionsResultListener(mPermission);
+
+
     }
 
     public void setMinTime(Long minTime) {
@@ -83,8 +86,13 @@ public final class JLocation implements EventChannel.StreamHandler {
                 }
             };
 
-            Location loc = mLocationManager.getLastKnownLocation(PROVIDER);
+            Location loc = getLastKnownLocation();
+
+            Log.i("xloc", loc.toString());
+
             onLocate(loc, true);
+
+
 
             mLocationManager.requestLocationUpdates(PROVIDER,
                     minTime == null ? MIN_TIME : minTime,
@@ -94,6 +102,25 @@ public final class JLocation implements EventChannel.StreamHandler {
         }
     }
 
+
+
+    private Location getLastKnownLocation() {
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+
+                this.PROVIDER = provider;
+            }
+        }
+        return bestLocation;
+    }
     private Map<String, Double> generateResult(Location location, boolean isLast) {
         HashMap<String, Double> loc = new HashMap<>();
         loc.put("last", isLast ? 1.0 : 0.0);
