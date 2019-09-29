@@ -1,3 +1,5 @@
+fork自jlocation，增加了定位自动选择 选择当前可用的定位方式
+
 # jlocation
 
 不使用 google 服务，不用注册第三方 key，可以直接获取设备 GPS 信息的 flutter 插件。
