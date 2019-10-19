@@ -28,7 +28,7 @@ public final class JLocation implements EventChannel.StreamHandler {
     private Long minTime = null;
     private Float minDistance = null;
 
-    private static String PROVIDER = LocationManager.GPS_PROVIDER;
+    private static String PROVIDER = LocationManager.NETWORK_PROVIDER;
     private final EventChannel mEventChannel;
     private LocationManager mLocationManager;
     private Context mContext;
@@ -70,7 +70,9 @@ public final class JLocation implements EventChannel.StreamHandler {
             mLocationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
+                    Log.i("xloc", "'listen'");
                     onLocate(location, false);
+
                 }
 
                 @Override
@@ -87,9 +89,7 @@ public final class JLocation implements EventChannel.StreamHandler {
             };
 
             Location loc = getLastKnownLocation();
-
-            Log.i("xloc", loc.toString());
-
+            // Log.i("xloc", loc != null ? loc.toString() : null);
             onLocate(loc, true);
 
 
@@ -106,6 +106,10 @@ public final class JLocation implements EventChannel.StreamHandler {
 
     private Location getLastKnownLocation() {
         List<String> providers = mLocationManager.getProviders(true);
+
+        if(providers.contains(LocationManager.NETWORK_PROVIDER) && providers.size() > 1) {
+            providers.remove(LocationManager.GPS_PROVIDER);
+        }
         Location bestLocation = null;
         for (String provider : providers) {
             Location l = mLocationManager.getLastKnownLocation(provider);
@@ -138,6 +142,10 @@ public final class JLocation implements EventChannel.StreamHandler {
 
     public void onLocate(Location location, boolean useLast) {
         if (location != null) {
+
+            Log.i("xloc-----", location.toString());
+
+
             Map<String, Double> loc = generateResult(location, useLast);
             if (mEvents != null) {
                 mEvents.success(loc);
