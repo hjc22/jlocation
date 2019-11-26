@@ -122,6 +122,13 @@ public final class JLocation implements EventChannel.StreamHandler {
 
                 this.PROVIDER = provider;
             }
+        }  
+        if(bestLocation == null) {
+            this.PROVIDER = LocationManager.GPS_PROVIDER;
+            Location l = mLocationManager.getLastKnownLocation(this.PROVIDER);
+            if(l != null) {
+                bestLocation = l;
+            }
         }
         return bestLocation;
     }
